@@ -10,11 +10,10 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * @Author 尚智江
- * @CreateDate 2023/6/2 21:54
+ * @CreateDate 2023/6/4 21:52
  */
-public class ProducerRouting {
+public class ProducerTopics {
     public static void main(String[] args) throws IOException, TimeoutException {
-
         // 1. 创建链接工厂
         ConnectionFactory factory = new ConnectionFactory();
         // 2. 设置参数  http://192.168.5.130/
@@ -43,13 +42,13 @@ public class ProducerRouting {
             5. internal: 内部使用。一般false
             6. arguments: 参数
          */
-        String exchangeName = "test_direct";
-        channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT, true, false, false, null);
+        String exchangeName = "test_topic";
+        channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC,true,false,false,null);
         // 6. 创建队列
-        String queue1Name = "test_direct_queue1";
-        String queue2Name = "test_direct_queue2";
-        channel.queueDeclare(queue1Name, true, false, false, null);
-        channel.queueDeclare(queue2Name, true, false, false, null);
+        String queue1Name = "test_topic1_queue1";
+        String queue2Name = "test_topic2_queue2";
+        channel.queueDeclare(queue1Name,true,false,false,null);
+        channel.queueDeclare(queue2Name,true,false,false,null);
         // 7. 绑定队列和交换机
         /*
         queueBind(String queue, String exchange, String routingKey)
@@ -59,23 +58,15 @@ public class ProducerRouting {
             3. routingKey: 路由键，绑定规则
                  如果交换机的类型为：fanout，routingKey设置为""
          */
-        // 队列1的绑定 error
-        channel.queueBind(queue1Name, exchangeName, "error");
-        // 队列2绑定 info error warning
-        channel.queueBind(queue2Name, exchangeName, "info");
-        channel.queueBind(queue2Name, exchangeName, "error");
-        channel.queueBind(queue2Name, exchangeName, "warning");
+        // routing key 系统的名称：日志的级别
+        // =需求：所有error级别的日志存入数据库，所有order系统的日志存入数据库
+        channel.queueBind(queue1Name,exchangeName,"#.error");
+        channel.queueBind(queue1Name,exchangeName,"order.*");
+        channel.queueBind(queue2Name,exchangeName,"*.*");
         // 8. 发送消息
-                /*
-        basicPublish(String exchange, String routingKey, BasicProperties props, byte[] body)
-        参数：
-            1. exchange：交换机名称，简单模式下交换机会使用默认的
-            2. routingKey： 路由名称
-            3. props: 配置信息
-            4. body: 发送消息数据
-         */
         String body = "日志信息：张三调用方法，日志级别： info--";
-        channel.basicPublish(exchangeName, "error", null, body.getBytes());
+//        channel.basicPublish(exchangeName,"order.info",null,body.getBytes());
+        channel.basicPublish(exchangeName,"goods.info",null,body.getBytes());
         // 9. 释放资源
         channel.close();
         connection.close();

@@ -60,3 +60,12 @@ C: 消费者
   * 黄色 Queue：绑定的是 #.news ，因此凡是以 .news 结尾的 routing key 都会被匹配
 
 ![img_6.png](image/img_6.png)
+
+# Springboot整合RabbitMQ
+rabbitmq-springboot-producer 生产者
+rabbitmq-springboot-consumer 消费者
+## 四中交换机介绍
+* **DirectExchange(直连交换机)：** 具有路由功能的交换机，绑定到此交换机的时候需要指定一个routing_key，交换机发送消息的时候需要routing_key，会将消息发送道对应的队列
+* **FanoutExchange(扇形交换机)：** 广播消息到所有队列，没有任何处理，速度最快
+* **TopicExchange(主题交换机，通配符形式)：** 在直连交换机基础上增加模式匹配，也就是对routing_key进行模式匹配，*代表一个单词，#代表多个单词
+* **HeadersExchange(首部交换机)：** 忽略routing_key，使用Headers信息（一个Hash的数据结构）进行匹配，优势在于可以有更多更灵活的匹配规则
